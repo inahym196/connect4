@@ -1,14 +1,16 @@
 package connect4
 
+type GameStatus int
+
 const (
-	GameStatusUnknown = iota
+	GameStatusUnknown GameStatus = iota
 	GameStatusWaiting
 	GameStatusPlaying
 	GameStatusFinished
 )
 
 type Game struct {
-	Status int
+	Status GameStatus
 }
 
 func (g *Game) GetStatus() string {
@@ -20,7 +22,7 @@ func (g *Game) GetStatus() string {
 	case GameStatusFinished:
 		return "Finished"
 	}
-	return ""
+	return "Unknown"
 }
 
 func NewGame() *Game {
