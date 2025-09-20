@@ -11,8 +11,8 @@ func TestNewGame(t *testing.T) {
 	if game == nil {
 		t.Fatal("NewGame() returned nil")
 	}
-	if game.Status != connect4.GameStatusWaiting {
-		t.Errorf("expected Status=%d, got %d", connect4.GameStatusWaiting, game.Status)
+	if game.Finished != false {
+		t.Errorf("expected Status=%T, got %T", false, game.Finished)
 	}
 
 	if len(game.Board) != connect4.BoardHeight {

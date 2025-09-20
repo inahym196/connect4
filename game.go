@@ -1,14 +1,5 @@
 package connect4
 
-type GameStatus int
-
-const (
-	GameStatusUnknown GameStatus = iota
-	GameStatusWaiting
-	GameStatusPlaying
-	GameStatusFinished
-)
-
 const (
 	BoardHeight = 6
 	BoardWidth  = 7
@@ -30,9 +21,9 @@ const (
 )
 
 type Game struct {
-	Status GameStatus
-	Board  [][]Piece
-	Turn   Turn
+	Finished bool
+	Board    [][]Piece
+	Turn     Turn
 }
 
 func initPieces() [][]Piece {
@@ -44,5 +35,5 @@ func initPieces() [][]Piece {
 }
 
 func NewGame() *Game {
-	return &Game{GameStatusWaiting, initPieces(), TurnFirst}
+	return &Game{false, initPieces(), TurnFirst}
 }
