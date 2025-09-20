@@ -29,4 +29,9 @@ func TestNewGame(t *testing.T) {
 			}
 		}
 	}
+
+	if game.Turn != connect4.TurnFirst {
+		t.Errorf("expected Status=%d, got %d", connect4.TurnFirst, game.Turn)
+	}
+
 }

@@ -22,9 +22,17 @@ const (
 	PieceYellow
 )
 
+type Turn byte
+
+const (
+	TurnFirst Turn = iota
+	TurnSecond
+)
+
 type Game struct {
 	Status GameStatus
 	Board  [][]Piece
+	Turn   Turn
 }
 
 func initPieces() [][]Piece {
@@ -36,5 +44,5 @@ func initPieces() [][]Piece {
 }
 
 func NewGame() *Game {
-	return &Game{GameStatusWaiting, initPieces()}
+	return &Game{GameStatusWaiting, initPieces(), TurnFirst}
 }
