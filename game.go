@@ -9,12 +9,8 @@ const (
 	GameStatusFinished
 )
 
-type Game struct {
-	Status GameStatus
-}
-
-func (g *Game) GetStatus() string {
-	switch g.Status {
+func (s GameStatus) String() string {
+	switch s {
 	case GameStatusWaiting:
 		return "Waiting"
 	case GameStatusPlaying:
@@ -23,6 +19,14 @@ func (g *Game) GetStatus() string {
 		return "Finished"
 	}
 	return "Unknown"
+}
+
+type Game struct {
+	Status GameStatus
+}
+
+func (g *Game) GetStatus() string {
+	return g.Status.String()
 }
 
 func NewGame() *Game {
