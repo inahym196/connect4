@@ -31,9 +31,6 @@ func initPieces() [][]Piece {
 	board := make([][]Piece, BoardHeight)
 	for i := range BoardHeight {
 		board[i] = make([]Piece, BoardWidth)
-		for j := range BoardWidth {
-			board[i][j] = PieceEmpty
-		}
 	}
 	return board
 }
