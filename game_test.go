@@ -38,6 +38,82 @@ func TestNewGame(t *testing.T) {
 	}
 }
 
+func TestCheckWin(t *testing.T) {
+	tests := []struct {
+		name   string
+		setup  func() *connect4.Game
+		row    int
+		col    int
+		expect bool
+	}{
+		{
+			name: "horizontal win",
+			setup: func() *connect4.Game {
+				g := connect4.NewGame()
+				for i := range 4 {
+					g.Board[5][i] = connect4.PieceRed
+				}
+				return g
+			},
+			row:    5,
+			col:    3,
+			expect: true,
+		},
+		{
+			name: "vertical win",
+			setup: func() *connect4.Game {
+				g := connect4.NewGame()
+				for i := 2; i < 6; i++ {
+					g.Board[i][0] = connect4.PieceYellow
+				}
+				return g
+			},
+			row:    5,
+			col:    0,
+			expect: true,
+		},
+		{
+			name: "diagonal win ↘",
+			setup: func() *connect4.Game {
+				g := connect4.NewGame()
+				g.Board[2][0] = connect4.PieceRed
+				g.Board[3][1] = connect4.PieceRed
+				g.Board[4][2] = connect4.PieceRed
+				g.Board[5][3] = connect4.PieceRed
+				return g
+			},
+			row:    5,
+			col:    3,
+			expect: true,
+		},
+		{
+			name: "no win",
+			setup: func() *connect4.Game {
+				g := connect4.NewGame()
+				g.Board[5][0] = connect4.PieceRed
+				g.Board[5][1] = connect4.PieceYellow
+				g.Board[5][2] = connect4.PieceRed
+				g.Board[5][3] = connect4.PieceRed
+				g.Board[5][4] = connect4.PieceRed
+				return g
+			},
+			row:    5,
+			col:    4,
+			expect: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := tt.setup()
+			got := g.CheckWin(tt.row, tt.col)
+			if got != tt.expect {
+				t.Errorf("checkWin() = %v, want %v", got, tt.expect)
+			}
+		})
+	}
+}
+
 func TestPutPiece(t *testing.T) {
 	t.Run(connect4.ErrColumnOutOfRange.Error(), func(t *testing.T) {
 		game := connect4.NewGame()
