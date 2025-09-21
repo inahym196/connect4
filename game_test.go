@@ -122,10 +122,10 @@ func TestPutPiece(t *testing.T) {
 	t.Run(connect4.ErrColumnOutOfRange.Error(), func(t *testing.T) {
 		game := connect4.NewGame()
 
-		if err := game.PutPiece(-1); err != connect4.ErrColumnOutOfRange {
+		if _, err := game.PutPiece(-1); err != connect4.ErrColumnOutOfRange {
 			t.Errorf("expected ErrColumnOutOfRange, got %v", err)
 		}
-		if err := game.PutPiece(connect4.BoardWidth); err != connect4.ErrColumnOutOfRange {
+		if _, err := game.PutPiece(connect4.BoardWidth); err != connect4.ErrColumnOutOfRange {
 			t.Errorf("expected ErrColumnOutOfRange, got %v", err)
 		}
 	})
@@ -135,7 +135,7 @@ func TestPutPiece(t *testing.T) {
 		col := 0
 		nextPiece := connect4.PieceYellow
 
-		if err := game.PutPiece(col); err != nil {
+		if _, err := game.PutPiece(col); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
@@ -156,7 +156,7 @@ func TestPutPiece(t *testing.T) {
 
 		game.PutPiece(col)
 
-		if err := game.PutPiece(col); err != nil {
+		if _, err := game.PutPiece(col); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
@@ -172,7 +172,7 @@ func TestPutPiece(t *testing.T) {
 			game.Board[i][0] = connect4.PieceRed
 		}
 
-		if err := game.PutPiece(0); err != connect4.ErrColumnFull {
+		if _, err := game.PutPiece(0); err != connect4.ErrColumnFull {
 			t.Errorf("expected ErrColumnFull, got %v", err)
 		}
 	})
