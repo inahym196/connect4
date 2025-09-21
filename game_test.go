@@ -7,7 +7,10 @@ import (
 )
 
 func TestNewGame(t *testing.T) {
+	nextPiece := connect4.PieceYellow
+
 	game := connect4.NewGame()
+
 	if game == nil {
 		t.Fatal("NewGame() returned nil")
 	}
@@ -30,8 +33,8 @@ func TestNewGame(t *testing.T) {
 		}
 	}
 
-	if game.Turn != connect4.TurnYellow {
-		t.Errorf("expected Turn=%d, got %d", connect4.TurnYellow, game.Turn)
+	if game.Next != nextPiece {
+		t.Errorf("expected Turn=%d, got %d", nextPiece, game.Next)
 	}
 }
 
@@ -50,21 +53,20 @@ func TestPutPiece(t *testing.T) {
 	t.Run("put piece in empty column", func(t *testing.T) {
 		game := connect4.NewGame()
 		col := 0
-		firstPiece := connect4.PieceYellow
-		firstTurn := connect4.TurnYellow
+		nextPiece := connect4.PieceYellow
 
 		if err := game.PutPiece(col); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
 		// 最下段にピースが置かれているか
-		if game.Board[connect4.BoardHeight-1][col] != firstPiece {
-			t.Errorf("expected piece %v at bottom, got %v", firstPiece, game.Board[connect4.BoardHeight-1][col])
+		if game.Board[connect4.BoardHeight-1][col] != nextPiece {
+			t.Errorf("expected piece %v at bottom, got %v", nextPiece, game.Board[connect4.BoardHeight-1][col])
 		}
 
 		// ターンが交代しているか
-		if game.Turn == firstTurn {
-			t.Errorf("expected turn to switch, still %v", game.Turn)
+		if game.Next == nextPiece {
+			t.Errorf("expected turn to switch, still %v", game.Next)
 		}
 	})
 	t.Run("place piece on partially filled column", func(t *testing.T) {

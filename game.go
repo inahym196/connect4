@@ -20,17 +20,10 @@ const (
 	PieceRed
 )
 
-type Turn byte
-
-const (
-	TurnYellow Turn = iota
-	TurnRed
-)
-
 type Game struct {
 	Finished bool
 	Board    [][]Piece
-	Turn     Turn
+	Next     Piece
 }
 
 func initPieces() [][]Piece {
@@ -42,18 +35,14 @@ func initPieces() [][]Piece {
 }
 
 func NewGame() *Game {
-	return &Game{false, initPieces(), TurnYellow}
+	return &Game{false, initPieces(), PieceYellow}
 }
 
-func (g *Game) turnColor() Piece {
-	return Piece(g.Turn + 1)
-}
-
-func (g *Game) nextTurn() Turn {
-	if g.Turn == TurnRed {
-		return TurnYellow
+func (g *Game) nextPiece() Piece {
+	if g.Next == PieceRed {
+		return PieceYellow
 	}
-	return TurnRed
+	return PieceRed
 }
 
 func (g *Game) PutPiece(column int) error {
@@ -65,8 +54,8 @@ func (g *Game) PutPiece(column int) error {
 	}
 	for i := BoardHeight - 1; i >= 0; i-- {
 		if g.Board[i][column] == PieceEmpty {
-			g.Board[i][column] = g.turnColor()
-			g.Turn = g.nextTurn()
+			g.Board[i][column] = g.Next
+			g.Next = g.nextPiece()
 			break
 		}
 	}
