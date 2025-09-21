@@ -3,8 +3,9 @@ package connect4
 import "fmt"
 
 var (
-	ErrColumnOutOfRange = fmt.Errorf("column out of range")
-	ErrColumnFull       = fmt.Errorf("column is full")
+	ErrColumnOutOfRange       = fmt.Errorf("column out of range")
+	ErrColumnFull             = fmt.Errorf("column is full")
+	ErrGameHasAlreadyFinished = fmt.Errorf("game has already finished")
 )
 
 const (
@@ -96,6 +97,9 @@ func (g *Game) PutPiece(column int) (row int, err error) {
 }
 
 func (g *Game) PutPieceAndUpdate(column int) error {
+	if g.Finished {
+		return ErrGameHasAlreadyFinished
+	}
 	row, err := g.PutPiece(column)
 	if err != nil {
 		return err

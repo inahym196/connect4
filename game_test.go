@@ -213,7 +213,24 @@ func TestPutPieceAndUpdate(t *testing.T) {
 		if game.Winner != myColor {
 			t.Errorf("expected winner is %d, got %d", myColor, game.Winner)
 		}
-
+	})
+	t.Run("終了したGameにはピースを置けない", func(t *testing.T) {
+		game := connect4.NewGame()
+		myCol := 0
+		oppCol := connect4.BoardWidth - 1
+		moves := []int{myCol, oppCol, myCol, oppCol, myCol, oppCol, myCol}
+		for _, col := range moves {
+			err := game.PutPieceAndUpdate(col)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+		}
+		if game.Finished != true {
+			t.Fatalf("expected finished is true, got %T", game.Finished)
+		}
+		if err := game.PutPieceAndUpdate(myCol); err != connect4.ErrGameHasAlreadyFinished {
+			t.Errorf("expected error is %v, got: %v", connect4.ErrGameHasAlreadyFinished, err)
+		}
 	})
 
 }
