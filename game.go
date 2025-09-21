@@ -94,3 +94,15 @@ func (g *Game) PutPiece(column int) (row int, err error) {
 	}
 	return -1, fmt.Errorf("something is wrong")
 }
+
+func (g *Game) PutPieceAndUpdate(column int) error {
+	row, err := g.PutPiece(column)
+	if err != nil {
+		return err
+	}
+	if g.CheckWin(row, column) {
+		g.Finished = true
+		g.Winner = g.nextPiece()
+	}
+	return nil
+}

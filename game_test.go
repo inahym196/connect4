@@ -143,11 +143,6 @@ func TestPutPiece(t *testing.T) {
 		if game.Board[connect4.BoardHeight-1][col] != nextPiece {
 			t.Errorf("expected piece %v at bottom, got %v", nextPiece, game.Board[connect4.BoardHeight-1][col])
 		}
-
-		// ターンが交代しているか
-		if game.Next == nextPiece {
-			t.Errorf("expected turn to switch, still %v", game.Next)
-		}
 	})
 	t.Run("place piece on partially filled column", func(t *testing.T) {
 		game := connect4.NewGame()
@@ -176,4 +171,49 @@ func TestPutPiece(t *testing.T) {
 			t.Errorf("expected ErrColumnFull, got %v", err)
 		}
 	})
+}
+
+func TestPutPieceAndUpdate(t *testing.T) {
+	t.Run("put piece in empty column", func(t *testing.T) {
+		game := connect4.NewGame()
+		col := 0
+		nextPiece := connect4.PieceYellow
+
+		if err := game.PutPieceAndUpdate(col); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if game.Next == nextPiece {
+			t.Errorf("expected turn to switch, still %v", game.Next)
+		}
+		if game.Finished != false {
+			t.Errorf("expected finished is false, got %T", game.Finished)
+		}
+		if game.Winner != connect4.PieceEmpty {
+			t.Errorf("expected winner is still empty(%d), got %d", connect4.PieceEmpty, game.Winner)
+		}
+
+	})
+	t.Run("put piece won", func(t *testing.T) {
+		game := connect4.NewGame()
+		myCol := 0
+		myColor := connect4.PieceYellow
+		oppCol := connect4.BoardWidth - 1
+		moves := []int{myCol, oppCol, myCol, oppCol, myCol, oppCol, myCol}
+		for _, col := range moves {
+			err := game.PutPieceAndUpdate(col)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+		}
+
+		if game.Finished != true {
+			t.Errorf("expected finished is true, got %T", game.Finished)
+		}
+		if game.Winner != myColor {
+			t.Errorf("expected winner is %d, got %d", myColor, game.Winner)
+		}
+
+	})
+
 }
