@@ -36,6 +36,10 @@ func TestNewGame(t *testing.T) {
 	if game.Next != nextPiece {
 		t.Errorf("expected Turn=%d, got %d", nextPiece, game.Next)
 	}
+
+	if game.Winner != connect4.PieceEmpty {
+		t.Errorf("expected PieceEmpty(%d), got %d", connect4.PieceEmpty, game.Winner)
+	}
 }
 
 func TestCheckWin(t *testing.T) {

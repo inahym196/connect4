@@ -24,6 +24,7 @@ type Game struct {
 	Finished bool
 	Board    [][]Piece
 	Next     Piece
+	Winner   Piece
 }
 
 func initPieces() [][]Piece {
@@ -35,7 +36,7 @@ func initPieces() [][]Piece {
 }
 
 func NewGame() *Game {
-	return &Game{false, initPieces(), PieceYellow}
+	return &Game{false, initPieces(), PieceYellow, PieceEmpty}
 }
 
 func (g *Game) nextPiece() Piece {
