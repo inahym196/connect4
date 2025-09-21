@@ -79,7 +79,7 @@ func (g *Game) CheckWin(row, col int) bool {
 	return false
 }
 
-func (g *Game) PutPiece(column int) (row int, err error) {
+func (g *Game) putPiece(column int) (row int, err error) {
 	if !(0 <= column && column < BoardWidth) {
 		return -1, ErrColumnOutOfRange
 	}
@@ -96,11 +96,11 @@ func (g *Game) PutPiece(column int) (row int, err error) {
 	return -1, fmt.Errorf("something is wrong")
 }
 
-func (g *Game) PutPieceAndUpdate(column int) error {
+func (g *Game) PutPiece(column int) error {
 	if g.Finished {
 		return ErrGameHasAlreadyFinished
 	}
-	row, err := g.PutPiece(column)
+	row, err := g.putPiece(column)
 	if err != nil {
 		return err
 	}

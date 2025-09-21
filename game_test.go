@@ -119,23 +119,24 @@ func TestCheckWin(t *testing.T) {
 }
 
 func TestPutPiece(t *testing.T) {
-	t.Run(connect4.ErrColumnOutOfRange.Error(), func(t *testing.T) {
+
+	t.Run("ボード外には置けない", func(t *testing.T) {
 		game := connect4.NewGame()
 
-		if _, err := game.PutPiece(-1); err != connect4.ErrColumnOutOfRange {
-			t.Errorf("expected ErrColumnOutOfRange, got %v", err)
+		if err := game.PutPiece(-1); err == nil {
+			t.Errorf("expected err, got %v", err)
 		}
-		if _, err := game.PutPiece(connect4.BoardWidth); err != connect4.ErrColumnOutOfRange {
-			t.Errorf("expected ErrColumnOutOfRange, got %v", err)
+		if err := game.PutPiece(connect4.BoardWidth); err == nil {
+			t.Errorf("expected err, got %v", err)
 		}
 	})
 
-	t.Run("put piece in empty column", func(t *testing.T) {
+	t.Run("最初の一個を置いてみる", func(t *testing.T) {
 		game := connect4.NewGame()
 		col := 0
 		nextPiece := connect4.PieceYellow
 
-		if _, err := game.PutPiece(col); err != nil {
+		if err := game.PutPiece(col); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
@@ -143,46 +144,6 @@ func TestPutPiece(t *testing.T) {
 		if game.Board[connect4.BoardHeight-1][col] != nextPiece {
 			t.Errorf("expected piece %v at bottom, got %v", nextPiece, game.Board[connect4.BoardHeight-1][col])
 		}
-	})
-	t.Run("place piece on partially filled column", func(t *testing.T) {
-		game := connect4.NewGame()
-		col := 0
-		secondPiece := connect4.PieceRed
-
-		game.PutPiece(col)
-
-		if _, err := game.PutPiece(col); err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-
-		// 二段目にピースが置かれているか
-		if game.Board[connect4.BoardHeight-2][col] != secondPiece {
-			t.Errorf("expected piece %v at second-to-bottom, got %v", secondPiece, game.Board[connect4.BoardHeight-2][col])
-		}
-	})
-
-	t.Run(connect4.ErrColumnFull.Error(), func(t *testing.T) {
-		game := connect4.NewGame()
-		for i := range connect4.BoardHeight {
-			game.Board[i][0] = connect4.PieceRed
-		}
-
-		if _, err := game.PutPiece(0); err != connect4.ErrColumnFull {
-			t.Errorf("expected ErrColumnFull, got %v", err)
-		}
-	})
-}
-
-func TestPutPieceAndUpdate(t *testing.T) {
-	t.Run("put piece in empty column", func(t *testing.T) {
-		game := connect4.NewGame()
-		col := 0
-		nextPiece := connect4.PieceYellow
-
-		if err := game.PutPieceAndUpdate(col); err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-
 		if game.Next == nextPiece {
 			t.Errorf("expected turn to switch, still %v", game.Next)
 		}
@@ -192,16 +153,39 @@ func TestPutPieceAndUpdate(t *testing.T) {
 		if game.Winner != connect4.PieceEmpty {
 			t.Errorf("expected winner is still empty(%d), got %d", connect4.PieceEmpty, game.Winner)
 		}
-
 	})
-	t.Run("put piece won", func(t *testing.T) {
+	t.Run("2個目を置いてみる", func(t *testing.T) {
+		game := connect4.NewGame()
+		col := 0
+		secondPiece := connect4.PieceRed
+
+		game.PutPiece(col)
+		if err := game.PutPiece(col); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		// 二段目にピースが置かれているか
+		if game.Board[connect4.BoardHeight-2][col] != secondPiece {
+			t.Errorf("expected piece %v at second-to-bottom, got %v", secondPiece, game.Board[connect4.BoardHeight-2][col])
+		}
+		if game.Next == secondPiece {
+			t.Errorf("expected turn to switch, still %v", game.Next)
+		}
+		if game.Finished != false {
+			t.Errorf("expected finished is false, got %T", game.Finished)
+		}
+		if game.Winner != connect4.PieceEmpty {
+			t.Errorf("expected winner is still empty(%d), got %d", connect4.PieceEmpty, game.Winner)
+		}
+	})
+	t.Run("4個連続すると勝てる", func(t *testing.T) {
 		game := connect4.NewGame()
 		myCol := 0
 		myColor := connect4.PieceYellow
 		oppCol := connect4.BoardWidth - 1
 		moves := []int{myCol, oppCol, myCol, oppCol, myCol, oppCol, myCol}
 		for _, col := range moves {
-			err := game.PutPieceAndUpdate(col)
+			err := game.PutPiece(col)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -214,13 +198,26 @@ func TestPutPieceAndUpdate(t *testing.T) {
 			t.Errorf("expected winner is %d, got %d", myColor, game.Winner)
 		}
 	})
+
+	t.Run("満タンのレーンにはピースを置けない", func(t *testing.T) {
+		game := connect4.NewGame()
+		col := 0
+		for range connect4.BoardHeight {
+			game.PutPiece(col)
+		}
+
+		if err := game.PutPiece(col); err != connect4.ErrColumnFull {
+			t.Errorf("expected ErrColumnFull, got %v", err)
+		}
+	})
+
 	t.Run("終了したGameにはピースを置けない", func(t *testing.T) {
 		game := connect4.NewGame()
 		myCol := 0
 		oppCol := connect4.BoardWidth - 1
 		moves := []int{myCol, oppCol, myCol, oppCol, myCol, oppCol, myCol}
 		for _, col := range moves {
-			err := game.PutPieceAndUpdate(col)
+			err := game.PutPiece(col)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -228,7 +225,7 @@ func TestPutPieceAndUpdate(t *testing.T) {
 		if game.Finished != true {
 			t.Fatalf("expected finished is true, got %T", game.Finished)
 		}
-		if err := game.PutPieceAndUpdate(myCol); err != connect4.ErrGameHasAlreadyFinished {
+		if err := game.PutPiece(myCol); err != connect4.ErrGameHasAlreadyFinished {
 			t.Errorf("expected error is %v, got: %v", connect4.ErrGameHasAlreadyFinished, err)
 		}
 	})
