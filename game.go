@@ -3,8 +3,8 @@ package connect4
 import "fmt"
 
 var (
-	ErrColumnOutOfRange       = fmt.Errorf("column out of range")
-	ErrColumnFull             = fmt.Errorf("column is full")
+	ErrWidthOutOfRange        = fmt.Errorf("width out of range")
+	ErrColumnIsFull           = fmt.Errorf("column is full")
 	ErrGameHasAlreadyFinished = fmt.Errorf("game has already finished")
 )
 
@@ -29,9 +29,9 @@ type Game struct {
 }
 
 func initPieces() [][]Piece {
-	board := make([][]Piece, BoardHeight)
-	for i := range BoardHeight {
-		board[i] = make([]Piece, BoardWidth)
+	board := make([][]Piece, BoardWidth)
+	for i := range BoardWidth {
+		board[i] = make([]Piece, BoardHeight)
 	}
 	return board
 }
@@ -47,22 +47,22 @@ func (g *Game) nextPiece() Piece {
 	return PieceRed
 }
 
-func (g *Game) countDirection(row, col, drow, dcol int, color Piece) int {
+func (g *Game) countDirection(col, height, dx, dy int, color Piece) int {
 	count := 0
-	row += drow
-	col += dcol
-	for 0 <= row && row < BoardHeight && 0 <= col && col < BoardWidth && g.Board[row][col] == color {
+	col += dx
+	height += dy
+	for 0 <= col && col < BoardWidth && 0 <= height && height < BoardHeight && g.Board[col][height] == color {
 		count++
-		row += drow
-		col += dcol
+		col += dx
+		height += dy
 	}
 	return count
 }
 
-func (g *Game) CheckWin(row, col int) bool {
-	color := g.Board[row][col]
+func (g *Game) CheckWin(col, height int) bool {
+	color := g.Board[col][height]
 	dirs := [][2]int{
-		// {v,h}
+		// {dx, dy}
 		{0, 1},
 		{1, 0},
 		{1, 1},
@@ -70,8 +70,8 @@ func (g *Game) CheckWin(row, col int) bool {
 	}
 	for _, d := range dirs {
 		count := 1
-		count += g.countDirection(row, col, d[0], d[1], color)
-		count += g.countDirection(row, col, -d[0], -d[1], color)
+		count += g.countDirection(col, height, d[0], d[1], color)
+		count += g.countDirection(col, height, -d[0], -d[1], color)
 		if count >= 4 {
 			return true
 		}
@@ -79,32 +79,29 @@ func (g *Game) CheckWin(row, col int) bool {
 	return false
 }
 
-func (g *Game) putPiece(column int) (row int, err error) {
+func (g *Game) putPiece(column int) (height int, err error) {
 	if !(0 <= column && column < BoardWidth) {
-		return -1, ErrColumnOutOfRange
-	}
-	if g.Board[0][column] != PieceEmpty {
-		return -1, ErrColumnFull
+		return -1, ErrWidthOutOfRange
 	}
 	for i := BoardHeight - 1; i >= 0; i-- {
-		if g.Board[i][column] == PieceEmpty {
-			g.Board[i][column] = g.Next
+		if g.Board[column][i] == PieceEmpty {
+			g.Board[column][i] = g.Next
 			g.Next = g.nextPiece()
 			return i, nil
 		}
 	}
-	return -1, fmt.Errorf("something is wrong")
+	return -1, ErrColumnIsFull
 }
 
 func (g *Game) PutPiece(column int) error {
 	if g.Finished {
 		return ErrGameHasAlreadyFinished
 	}
-	row, err := g.putPiece(column)
+	height, err := g.putPiece(column)
 	if err != nil {
 		return err
 	}
-	if g.CheckWin(row, column) {
+	if g.CheckWin(column, height) {
 		g.Finished = true
 		g.Winner = g.nextPiece()
 	}

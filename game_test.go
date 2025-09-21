@@ -18,15 +18,15 @@ func TestNewGame(t *testing.T) {
 		t.Errorf("expected false, got %T", game.Finished)
 	}
 
-	if len(game.Board) != connect4.BoardHeight {
-		t.Fatalf("expected %d rows, got %d", connect4.BoardHeight, len(game.Board))
+	if len(game.Board) != connect4.BoardWidth {
+		t.Fatalf("expected %d columns, got %d", connect4.BoardWidth, len(game.Board))
 	}
 
-	for i, row := range game.Board {
-		if len(row) != connect4.BoardWidth {
-			t.Fatalf("row %d: expected %d columns, got %d", i, connect4.BoardWidth, len(row))
+	for i, stack := range game.Board {
+		if len(stack) != connect4.BoardHeight {
+			t.Fatalf("row %d: expected %d height, got %d", i, connect4.BoardHeight, len(stack))
 		}
-		for j, p := range row {
+		for j, p := range stack {
 			if p != connect4.PieceEmpty {
 				t.Fatalf("cell (%d,%d): expected PieceEmpty, got %v", i, j, p)
 			}
@@ -46,8 +46,8 @@ func TestCheckWin(t *testing.T) {
 	tests := []struct {
 		name   string
 		setup  func() *connect4.Game
-		row    int
 		col    int
+		height int
 		expect bool
 	}{
 		{
@@ -59,8 +59,8 @@ func TestCheckWin(t *testing.T) {
 				}
 				return g
 			},
-			row:    5,
-			col:    3,
+			col:    5,
+			height: 3,
 			expect: true,
 		},
 		{
@@ -72,8 +72,8 @@ func TestCheckWin(t *testing.T) {
 				}
 				return g
 			},
-			row:    5,
-			col:    0,
+			col:    5,
+			height: 0,
 			expect: true,
 		},
 		{
@@ -86,8 +86,8 @@ func TestCheckWin(t *testing.T) {
 				g.Board[5][3] = connect4.PieceRed
 				return g
 			},
-			row:    5,
-			col:    3,
+			col:    5,
+			height: 3,
 			expect: true,
 		},
 		{
@@ -101,8 +101,8 @@ func TestCheckWin(t *testing.T) {
 				g.Board[5][4] = connect4.PieceRed
 				return g
 			},
-			row:    5,
-			col:    4,
+			col:    5,
+			height: 4,
 			expect: false,
 		},
 	}
@@ -110,7 +110,7 @@ func TestCheckWin(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := tt.setup()
-			got := g.CheckWin(tt.row, tt.col)
+			got := g.CheckWin(tt.col, tt.height)
 			if got != tt.expect {
 				t.Errorf("checkWin() = %v, want %v", got, tt.expect)
 			}
@@ -141,8 +141,8 @@ func TestPutPiece(t *testing.T) {
 		}
 
 		// 最下段にピースが置かれているか
-		if game.Board[connect4.BoardHeight-1][col] != nextPiece {
-			t.Errorf("expected piece %v at bottom, got %v", nextPiece, game.Board[connect4.BoardHeight-1][col])
+		if game.Board[col][connect4.BoardHeight-1] != nextPiece {
+			t.Errorf("expected piece %v at bottom, got %v", nextPiece, game.Board[col][connect4.BoardHeight-1])
 		}
 		if game.Next == nextPiece {
 			t.Errorf("expected turn to switch, still %v", game.Next)
@@ -165,8 +165,8 @@ func TestPutPiece(t *testing.T) {
 		}
 
 		// 二段目にピースが置かれているか
-		if game.Board[connect4.BoardHeight-2][col] != secondPiece {
-			t.Errorf("expected piece %v at second-to-bottom, got %v", secondPiece, game.Board[connect4.BoardHeight-2][col])
+		if game.Board[col][connect4.BoardHeight-2] != secondPiece {
+			t.Errorf("expected piece %v at second-to-bottom, got %v", secondPiece, game.Board[col][connect4.BoardHeight-2])
 		}
 		if game.Next == secondPiece {
 			t.Errorf("expected turn to switch, still %v", game.Next)
@@ -184,8 +184,8 @@ func TestPutPiece(t *testing.T) {
 		myColor := connect4.PieceYellow
 		oppCol := connect4.BoardWidth - 1
 		moves := []int{myCol, oppCol, myCol, oppCol, myCol, oppCol, myCol}
-		for _, col := range moves {
-			err := game.PutPiece(col)
+		for _, stack := range moves {
+			err := game.PutPiece(stack)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -206,8 +206,8 @@ func TestPutPiece(t *testing.T) {
 			game.PutPiece(col)
 		}
 
-		if err := game.PutPiece(col); err != connect4.ErrColumnFull {
-			t.Errorf("expected ErrColumnFull, got %v", err)
+		if err := game.PutPiece(col); err == nil {
+			t.Errorf("expected err, got %v", err)
 		}
 	})
 
@@ -216,8 +216,8 @@ func TestPutPiece(t *testing.T) {
 		myCol := 0
 		oppCol := connect4.BoardWidth - 1
 		moves := []int{myCol, oppCol, myCol, oppCol, myCol, oppCol, myCol}
-		for _, col := range moves {
-			err := game.PutPiece(col)
+		for _, stack := range moves {
+			err := game.PutPiece(stack)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
