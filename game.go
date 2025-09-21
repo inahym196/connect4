@@ -79,14 +79,13 @@ func (g *Game) CheckWin(col, height int) bool {
 	return false
 }
 
-func (g *Game) putPiece(column int) (height int, err error) {
+func (g *Game) putPiece(column int, piece Piece) (height int, err error) {
 	if !(0 <= column && column < BoardWidth) {
 		return -1, ErrWidthOutOfRange
 	}
 	for i := BoardHeight - 1; i >= 0; i-- {
 		if g.Board[column][i] == PieceEmpty {
-			g.Board[column][i] = g.Next
-			g.Next = g.nextPiece()
+			g.Board[column][i] = piece
 			return i, nil
 		}
 	}
@@ -97,10 +96,11 @@ func (g *Game) PutPiece(column int) error {
 	if g.Finished {
 		return ErrGameHasAlreadyFinished
 	}
-	height, err := g.putPiece(column)
+	height, err := g.putPiece(column, g.Next)
 	if err != nil {
 		return err
 	}
+	g.Next = g.nextPiece()
 	if g.CheckWin(column, height) {
 		g.Finished = true
 		g.Winner = g.nextPiece()

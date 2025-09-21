@@ -22,11 +22,11 @@ func TestNewGame(t *testing.T) {
 		t.Fatalf("expected %d columns, got %d", connect4.BoardWidth, len(game.Board))
 	}
 
-	for i, stack := range game.Board {
-		if len(stack) != connect4.BoardHeight {
-			t.Fatalf("row %d: expected %d height, got %d", i, connect4.BoardHeight, len(stack))
+	for i, lane := range game.Board {
+		if len(lane) != connect4.BoardHeight {
+			t.Fatalf("row %d: expected %d height, got %d", i, connect4.BoardHeight, len(lane))
 		}
-		for j, p := range stack {
+		for j, p := range lane {
 			if p != connect4.PieceEmpty {
 				t.Fatalf("cell (%d,%d): expected PieceEmpty, got %v", i, j, p)
 			}
@@ -184,8 +184,8 @@ func TestPutPiece(t *testing.T) {
 		myColor := connect4.PieceYellow
 		oppCol := connect4.BoardWidth - 1
 		moves := []int{myCol, oppCol, myCol, oppCol, myCol, oppCol, myCol}
-		for _, stack := range moves {
-			err := game.PutPiece(stack)
+		for _, lane := range moves {
+			err := game.PutPiece(lane)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -216,8 +216,8 @@ func TestPutPiece(t *testing.T) {
 		myCol := 0
 		oppCol := connect4.BoardWidth - 1
 		moves := []int{myCol, oppCol, myCol, oppCol, myCol, oppCol, myCol}
-		for _, stack := range moves {
-			err := game.PutPiece(stack)
+		for _, lane := range moves {
+			err := game.PutPiece(lane)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
