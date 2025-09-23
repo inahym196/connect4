@@ -37,13 +37,13 @@ func (p PlayerPiece) Opponent() PlayerPiece {
 
 type Board [BoardColumns][BoardRows]Piece
 
-func (b Board) DropPiece(col int, p Piece) (row int, err error) {
+func (b Board) DropPiece(col int, pp PlayerPiece) (row int, err error) {
 	if !(0 <= col && col < len(b)) {
 		return -1, ErrColumnOutOfRange
 	}
 	for i := len(b[col]) - 1; i >= 0; i-- {
 		if b[col][i] == PieceEmpty {
-			b[col][i] = p
+			b[col][i] = Piece(pp)
 			return i, nil
 		}
 	}
@@ -97,7 +97,7 @@ func (g *Game) PutPiece(column int) error {
 		return ErrGameHasAlreadyFinished
 	}
 	next := g.Next
-	row, err := g.Board.DropPiece(column, Piece(next))
+	row, err := g.Board.DropPiece(column, next)
 	if err != nil {
 		return err
 	}
