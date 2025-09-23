@@ -7,7 +7,7 @@ import (
 )
 
 func TestBoard_DropPiece(t *testing.T) {
-	t.Run("ボードには置けない", func(t *testing.T) {
+	t.Run("ボード外には置けない", func(t *testing.T) {
 		b := connect4.Board{}
 		if _, err := b.DropPiece(-1, connect4.PlayerPieceRed); err == nil {
 			t.Errorf("expected err, got %v", err)
