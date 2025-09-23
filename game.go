@@ -29,15 +29,19 @@ const (
 )
 
 func (p PlayerPiece) Opponent() PlayerPiece {
-	if p == PlayerPieceRed {
+	switch p {
+	case PlayerPieceRed:
 		return PlayerPieceYellow
+	case PlayerPieceYellow:
+		return PlayerPieceRed
+	default:
+		panic("invalid player piece")
 	}
-	return PlayerPieceYellow
 }
 
 type Board [BoardColumns][BoardRows]Piece
 
-func (b Board) DropPiece(col int, pp PlayerPiece) (row int, err error) {
+func (b *Board) DropPiece(col int, pp PlayerPiece) (row int, err error) {
 	if !(0 <= col && col < len(b)) {
 		return -1, ErrColumnOutOfRange
 	}
@@ -53,7 +57,7 @@ func (b Board) DropPiece(col int, pp PlayerPiece) (row int, err error) {
 func (b Board) countDirection(col, row, dx, dy int, piece Piece) (count int) {
 	col += dx
 	row += dy
-	for 0 <= col && col < len(b) && 0 <= row && row < len(b) && b[col][row] == piece {
+	for 0 <= col && col < len(b) && 0 <= row && row < len(b[col]) && b[col][row] == piece {
 		count++
 		col += dx
 		row += dy
@@ -63,12 +67,15 @@ func (b Board) countDirection(col, row, dx, dy int, piece Piece) (count int) {
 
 func (b Board) CheckWin(col, row int) bool {
 	piece := b[col][row]
+	if piece == PieceEmpty {
+		return false
+	}
 	dirs := [][2]int{
 		// {dx, dy}
 		{0, 1},
 		{1, 0},
 		{1, 1},
-		{-1, -1},
+		{1, -1},
 	}
 	for _, d := range dirs {
 		count := 1

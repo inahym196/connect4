@@ -6,8 +6,155 @@ import (
 	"github.com/inahym196/connect4"
 )
 
+func TestBoard_DropPiece(t *testing.T) {
+	t.Run("ボードには置けない", func(t *testing.T) {
+		b := connect4.Board{}
+		if _, err := b.DropPiece(-1, connect4.PlayerPieceRed); err == nil {
+			t.Errorf("expected err, got %v", err)
+		}
+		if _, err := b.DropPiece(7, connect4.PlayerPieceRed); err == nil {
+			t.Errorf("expected err, got %v", err)
+		}
+	})
+	t.Run("最初の一個を置いてみる", func(t *testing.T) {
+		b := connect4.Board{}
+		col := 0
+		pp := connect4.PlayerPieceRed
+
+		row, err := b.DropPiece(col, pp)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// 最下段にピースが置かれているか
+		if row != connect4.BoardRows-1 {
+			t.Errorf("expected row %d, got %d", connect4.BoardRows-1, row)
+		}
+		// 最下段のピースは置いたピースと一致するか
+		if b[col][connect4.BoardRows-1] != connect4.Piece(pp) {
+			t.Errorf("expected piece %v at bottom, got %v", connect4.Piece(pp), b[col][connect4.BoardRows-1])
+		}
+	})
+	t.Run("2個目を置いてみる", func(t *testing.T) {
+		b := connect4.Board{}
+		col := 0
+		pp1 := connect4.PlayerPieceYellow
+		pp2 := connect4.PlayerPieceRed
+
+		b.DropPiece(col, pp1)
+		row, err := b.DropPiece(col, pp2)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// 二段目にピースが置かれているか
+		if row != connect4.BoardRows-2 {
+			t.Errorf("expected row %d, got %d", connect4.BoardRows-2, row)
+		}
+		// 二段目のピースは置いたピースと一致するか
+		if b[col][connect4.BoardRows-2] != connect4.Piece(pp2) {
+			t.Errorf("expected piece %v at bottom, got %v", connect4.Piece(pp2), b[col][connect4.BoardRows-1])
+		}
+	})
+	t.Run("満タンのColumnにはピースを置けない", func(t *testing.T) {
+		b := connect4.Board{}
+		col := 0
+		for range connect4.BoardRows {
+			if _, err := b.DropPiece(col, connect4.PlayerPieceRed); err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		if _, err := b.DropPiece(col, connect4.PlayerPieceRed); err == nil {
+			t.Error(err)
+		}
+	})
+
+}
+func TestBoard_CheckWin(t *testing.T) {
+	tests := []struct {
+		name   string
+		setup  func() connect4.Board
+		col    int
+		row    int
+		expect bool
+	}{
+		{
+			name: "horizontal win",
+			setup: func() connect4.Board {
+				b := connect4.Board{}
+				for i := range 4 {
+					b.DropPiece(i, connect4.PlayerPieceRed)
+				}
+				return b
+			},
+			col:    3,
+			row:    5, // connect4.BoardRows - 1
+			expect: true,
+		},
+		{
+			name: "vertical win",
+			setup: func() connect4.Board {
+				b := connect4.Board{}
+				for range 4 {
+					b.DropPiece(0, connect4.PlayerPieceYellow)
+				}
+				return b
+			},
+			col:    0,
+			row:    3,
+			expect: true,
+		},
+		{
+			name: "diagonal win ↙︎",
+			setup: func() connect4.Board {
+				b := connect4.Board{}
+				b.DropPiece(0, connect4.PlayerPieceRed) //0,5
+				b.DropPiece(1, connect4.PlayerPieceYellow)
+				b.DropPiece(1, connect4.PlayerPieceRed) //1,4
+				b.DropPiece(2, connect4.PlayerPieceYellow)
+				b.DropPiece(2, connect4.PlayerPieceYellow)
+				b.DropPiece(2, connect4.PlayerPieceRed) //2,3
+				b.DropPiece(3, connect4.PlayerPieceYellow)
+				b.DropPiece(3, connect4.PlayerPieceYellow)
+				b.DropPiece(3, connect4.PlayerPieceYellow)
+				b.DropPiece(3, connect4.PlayerPieceRed) //3,2
+				return b
+			},
+			col:    3,
+			row:    2,
+			expect: true,
+		},
+		{
+			name: "no win",
+			setup: func() connect4.Board {
+				b := connect4.Board{}
+				b.DropPiece(0, connect4.PlayerPieceRed)
+				b.DropPiece(1, connect4.PlayerPieceYellow)
+				b.DropPiece(2, connect4.PlayerPieceRed)
+				b.DropPiece(3, connect4.PlayerPieceRed)
+				b.DropPiece(4, connect4.PlayerPieceRed)
+				return b
+			},
+			col:    4,
+			row:    5,
+			expect: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b := tt.setup()
+			got := b.CheckWin(tt.col, tt.row)
+			if got != tt.expect {
+				t.Errorf("expected checkWin() = %v, got %v", tt.expect, got)
+			}
+		})
+	}
+}
+
 func TestNewGame(t *testing.T) {
-	nextPiece := connect4.PieceYellow
+	nextPiece := connect4.PlayerPieceYellow
 
 	game := connect4.NewGame()
 
@@ -17,175 +164,62 @@ func TestNewGame(t *testing.T) {
 	if game.Finished != false {
 		t.Errorf("expected false, got %T", game.Finished)
 	}
-
-	if len(game.Board) != connect4.BoardWidth {
-		t.Fatalf("expected %d columns, got %d", connect4.BoardWidth, len(game.Board))
-	}
-
-	for i, lane := range game.Board {
-		if len(lane) != connect4.BoardHeight {
-			t.Fatalf("row %d: expected %d height, got %d", i, connect4.BoardHeight, len(lane))
-		}
-		for j, p := range lane {
-			if p != connect4.PieceEmpty {
-				t.Fatalf("cell (%d,%d): expected PieceEmpty, got %v", i, j, p)
-			}
-		}
-	}
-
 	if game.Next != nextPiece {
-		t.Errorf("expected Turn=%d, got %d", nextPiece, game.Next)
+		t.Errorf("expected Turn %v, got %v", nextPiece, game.Next)
 	}
-
 	if game.Winner != connect4.PieceEmpty {
-		t.Errorf("expected PieceEmpty(%d), got %d", connect4.PieceEmpty, game.Winner)
-	}
-}
-
-func TestCheckWin(t *testing.T) {
-	tests := []struct {
-		name   string
-		setup  func() *connect4.Game
-		col    int
-		height int
-		expect bool
-	}{
-		{
-			name: "horizontal win",
-			setup: func() *connect4.Game {
-				g := connect4.NewGame()
-				for i := range 4 {
-					g.Board[5][i] = connect4.PieceRed
-				}
-				return g
-			},
-			col:    5,
-			height: 3,
-			expect: true,
-		},
-		{
-			name: "vertical win",
-			setup: func() *connect4.Game {
-				g := connect4.NewGame()
-				for i := 2; i < 6; i++ {
-					g.Board[i][0] = connect4.PieceYellow
-				}
-				return g
-			},
-			col:    5,
-			height: 0,
-			expect: true,
-		},
-		{
-			name: "diagonal win ↘",
-			setup: func() *connect4.Game {
-				g := connect4.NewGame()
-				g.Board[2][0] = connect4.PieceRed
-				g.Board[3][1] = connect4.PieceRed
-				g.Board[4][2] = connect4.PieceRed
-				g.Board[5][3] = connect4.PieceRed
-				return g
-			},
-			col:    5,
-			height: 3,
-			expect: true,
-		},
-		{
-			name: "no win",
-			setup: func() *connect4.Game {
-				g := connect4.NewGame()
-				g.Board[5][0] = connect4.PieceRed
-				g.Board[5][1] = connect4.PieceYellow
-				g.Board[5][2] = connect4.PieceRed
-				g.Board[5][3] = connect4.PieceRed
-				g.Board[5][4] = connect4.PieceRed
-				return g
-			},
-			col:    5,
-			height: 4,
-			expect: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			g := tt.setup()
-			got := g.CheckWin(tt.col, tt.height)
-			if got != tt.expect {
-				t.Errorf("checkWin() = %v, want %v", got, tt.expect)
-			}
-		})
+		t.Errorf("expected %v, got %v", connect4.PieceEmpty, game.Winner)
 	}
 }
 
 func TestPutPiece(t *testing.T) {
-
-	t.Run("ボード外には置けない", func(t *testing.T) {
-		game := connect4.NewGame()
-
-		if err := game.PutPiece(-1); err == nil {
-			t.Errorf("expected err, got %v", err)
-		}
-		if err := game.PutPiece(connect4.BoardWidth); err == nil {
-			t.Errorf("expected err, got %v", err)
-		}
-	})
-
 	t.Run("最初の一個を置いてみる", func(t *testing.T) {
 		game := connect4.NewGame()
 		col := 0
-		nextPiece := connect4.PieceYellow
+		nextPiece := connect4.PlayerPieceRed
 
 		if err := game.PutPiece(col); err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatal(err)
 		}
 
-		// 最下段にピースが置かれているか
-		if game.Board[col][connect4.BoardHeight-1] != nextPiece {
-			t.Errorf("expected piece %v at bottom, got %v", nextPiece, game.Board[col][connect4.BoardHeight-1])
-		}
-		if game.Next == nextPiece {
-			t.Errorf("expected turn to switch, still %v", game.Next)
+		if game.Next != nextPiece {
+			t.Errorf("expected Next is %v, got %v", nextPiece, game.Next)
 		}
 		if game.Finished != false {
 			t.Errorf("expected finished is false, got %T", game.Finished)
 		}
 		if game.Winner != connect4.PieceEmpty {
-			t.Errorf("expected winner is still empty(%d), got %d", connect4.PieceEmpty, game.Winner)
+			t.Errorf("expected winner is %v, got %v", connect4.PieceEmpty, game.Winner)
 		}
 	})
 	t.Run("2個目を置いてみる", func(t *testing.T) {
 		game := connect4.NewGame()
 		col := 0
-		secondPiece := connect4.PieceRed
+		secondPiece := connect4.PlayerPieceYellow
 
 		game.PutPiece(col)
 		if err := game.PutPiece(col); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		// 二段目にピースが置かれているか
-		if game.Board[col][connect4.BoardHeight-2] != secondPiece {
-			t.Errorf("expected piece %v at second-to-bottom, got %v", secondPiece, game.Board[col][connect4.BoardHeight-2])
-		}
-		if game.Next == secondPiece {
-			t.Errorf("expected turn to switch, still %v", game.Next)
+		if game.Next != secondPiece {
+			t.Errorf("expected Next %v, got %v", secondPiece, game.Next)
 		}
 		if game.Finished != false {
 			t.Errorf("expected finished is false, got %T", game.Finished)
 		}
 		if game.Winner != connect4.PieceEmpty {
-			t.Errorf("expected winner is still empty(%d), got %d", connect4.PieceEmpty, game.Winner)
+			t.Errorf("expected winner %v, got %v", connect4.PieceEmpty, game.Winner)
 		}
 	})
 	t.Run("4個連続すると勝てる", func(t *testing.T) {
 		game := connect4.NewGame()
 		myCol := 0
 		myColor := connect4.PieceYellow
-		oppCol := connect4.BoardWidth - 1
+		oppCol := connect4.BoardColumns - 1
 		moves := []int{myCol, oppCol, myCol, oppCol, myCol, oppCol, myCol}
-		for _, lane := range moves {
-			err := game.PutPiece(lane)
+		for _, col := range moves {
+			err := game.PutPiece(col)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -195,31 +229,19 @@ func TestPutPiece(t *testing.T) {
 			t.Errorf("expected finished is true, got %T", game.Finished)
 		}
 		if game.Winner != myColor {
-			t.Errorf("expected winner is %d, got %d", myColor, game.Winner)
-		}
-	})
-
-	t.Run("満タンのレーンにはピースを置けない", func(t *testing.T) {
-		game := connect4.NewGame()
-		col := 0
-		for range connect4.BoardHeight {
-			game.PutPiece(col)
-		}
-
-		if err := game.PutPiece(col); err == nil {
-			t.Errorf("expected err, got %v", err)
+			t.Errorf("expected winner is %v, got %v", myColor, game.Winner)
 		}
 	})
 
 	t.Run("終了したGameにはピースを置けない", func(t *testing.T) {
 		game := connect4.NewGame()
 		myCol := 0
-		oppCol := connect4.BoardWidth - 1
+		oppCol := connect4.BoardColumns - 1
 		moves := []int{myCol, oppCol, myCol, oppCol, myCol, oppCol, myCol}
 		for _, lane := range moves {
 			err := game.PutPiece(lane)
 			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
+				t.Fatal(err)
 			}
 		}
 		if game.Finished != true {
