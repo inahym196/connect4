@@ -96,15 +96,15 @@ func (g *Game) PutPiece(column int) error {
 	if g.Finished {
 		return ErrGameHasAlreadyFinished
 	}
-	next := g.Next
-	row, err := g.Board.DropPiece(column, next)
+	row, err := g.Board.DropPiece(column, g.Next)
 	if err != nil {
 		return err
 	}
-	g.Next = next.Opponent()
 	if g.Board.CheckWin(column, row) {
 		g.Finished = true
-		g.Winner = Piece(next)
+		g.Winner = Piece(g.Next)
+	} else {
+		g.Next = g.Next.Opponent()
 	}
 	return nil
 }
