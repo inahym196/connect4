@@ -89,29 +89,45 @@ func (b Board) CheckWin(col, row int) bool {
 }
 
 type Game struct {
-	Finished bool
-	Board    Board
-	Next     PlayerPiece
-	Winner   Piece
+	finished bool
+	board    Board
+	next     PlayerPiece
+	winner   Piece
 }
 
 func NewGame() *Game {
 	return &Game{false, Board{}, PlayerPieceYellow, PieceEmpty}
 }
 
+func (g Game) IsFinished() bool {
+	return g.finished
+}
+
+func (g Game) Board() Board {
+	return g.board
+}
+
+func (g Game) Next() PlayerPiece {
+	return g.next
+}
+
+func (g Game) Winner() Piece {
+	return g.winner
+}
+
 func (g *Game) PutPiece(column int) error {
-	if g.Finished {
+	if g.finished {
 		return ErrGameHasAlreadyFinished
 	}
-	row, err := g.Board.DropPiece(column, g.Next)
+	row, err := g.board.DropPiece(column, g.next)
 	if err != nil {
 		return err
 	}
-	if g.Board.CheckWin(column, row) {
-		g.Finished = true
-		g.Winner = Piece(g.Next)
+	if g.board.CheckWin(column, row) {
+		g.finished = true
+		g.winner = Piece(g.next)
 	} else {
-		g.Next = g.Next.Opponent()
+		g.next = g.next.Opponent()
 	}
 	return nil
 }

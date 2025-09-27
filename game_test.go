@@ -161,14 +161,14 @@ func TestNewGame(t *testing.T) {
 	if game == nil {
 		t.Fatal("NewGame() returned nil")
 	}
-	if game.Finished != false {
-		t.Errorf("expected false, got %T", game.Finished)
+	if game.IsFinished() != false {
+		t.Errorf("expected false, got %T", game.IsFinished())
 	}
-	if game.Next != nextPiece {
-		t.Errorf("expected Turn %v, got %v", nextPiece, game.Next)
+	if game.Next() != nextPiece {
+		t.Errorf("expected Turn %v, got %v", nextPiece, game.Next())
 	}
-	if game.Winner != connect4.PieceEmpty {
-		t.Errorf("expected %v, got %v", connect4.PieceEmpty, game.Winner)
+	if game.Winner() != connect4.PieceEmpty {
+		t.Errorf("expected %v, got %v", connect4.PieceEmpty, game.Winner())
 	}
 }
 
@@ -182,14 +182,14 @@ func TestPutPiece(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if game.Next != nextPiece {
-			t.Errorf("expected Next is %v, got %v", nextPiece, game.Next)
+		if game.Next() != nextPiece {
+			t.Errorf("expected Next is %v, got %v", nextPiece, game.Next())
 		}
-		if game.Finished != false {
-			t.Errorf("expected finished is false, got %T", game.Finished)
+		if game.IsFinished() != false {
+			t.Errorf("expected finished is false, got %T", game.IsFinished())
 		}
-		if game.Winner != connect4.PieceEmpty {
-			t.Errorf("expected winner is %v, got %v", connect4.PieceEmpty, game.Winner)
+		if game.Winner() != connect4.PieceEmpty {
+			t.Errorf("expected winner is %v, got %v", connect4.PieceEmpty, game.Winner())
 		}
 	})
 	t.Run("2個目を置いてみる", func(t *testing.T) {
@@ -202,14 +202,14 @@ func TestPutPiece(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		if game.Next != secondPiece {
-			t.Errorf("expected Next %v, got %v", secondPiece, game.Next)
+		if game.Next() != secondPiece {
+			t.Errorf("expected Next %v, got %v", secondPiece, game.Next())
 		}
-		if game.Finished != false {
-			t.Errorf("expected finished is false, got %T", game.Finished)
+		if game.IsFinished() != false {
+			t.Errorf("expected finished is false, got %T", game.IsFinished())
 		}
-		if game.Winner != connect4.PieceEmpty {
-			t.Errorf("expected winner %v, got %v", connect4.PieceEmpty, game.Winner)
+		if game.Winner() != connect4.PieceEmpty {
+			t.Errorf("expected winner %v, got %v", connect4.PieceEmpty, game.Winner())
 		}
 	})
 	t.Run("4個連続すると勝てる", func(t *testing.T) {
@@ -225,11 +225,11 @@ func TestPutPiece(t *testing.T) {
 			}
 		}
 
-		if game.Finished != true {
-			t.Errorf("expected finished is true, got %T", game.Finished)
+		if game.IsFinished() != true {
+			t.Errorf("expected finished is true, got %T", game.IsFinished())
 		}
-		if game.Winner != myColor {
-			t.Errorf("expected winner is %v, got %v", myColor, game.Winner)
+		if game.Winner() != myColor {
+			t.Errorf("expected winner is %v, got %v", myColor, game.Winner())
 		}
 	})
 
@@ -244,8 +244,8 @@ func TestPutPiece(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
-		if game.Finished != true {
-			t.Fatalf("expected finished is true, got %T", game.Finished)
+		if game.IsFinished() != true {
+			t.Fatalf("expected finished is true, got %T", game.IsFinished())
 		}
 		if err := game.PutPiece(myCol); err != connect4.ErrGameHasAlreadyFinished {
 			t.Errorf("expected error is %v, got: %v", connect4.ErrGameHasAlreadyFinished, err)
